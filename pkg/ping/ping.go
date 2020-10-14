@@ -10,25 +10,29 @@ import (
 	"time"
 
 	"github.com/prometheus/common/log"
+	"github.com/spf13/viper"
 )
 
-func NewPingClient(host string) *Client {
+func NewPingClient(hostname string) *Client {
+
+	insecure := viper.GetBool(InsecureSSLFlag)
+
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: insecure},
 	}
 	return &Client{
-		Hostname: host,
+		Hostname: hostname,
 		HTTPClient: &http.Client{
 			Transport: tr,
-			Timeout:   time.Duration(100) * time.Second,
+			Timeout:   time.Duration(viper.GetInt64(HTTPClientTimeoutFlag)) * time.Second,
 		},
-		Endpoint: fmt.Sprintf("https://%s:3000/pa/heartbeat.ping", host),
+		PingAccessHeartbeatEndpoint: fmt.Sprintf(viper.GetString(PingAccessHeartbeatEndpoint), hostname),
 	}
 }
 
 func doHTTPGet(c *Client, body []byte) ([]byte, error) {
 	log.Infof("Start scrape for %v\n", c.Hostname)
-	req, err := http.NewRequest("GET", c.Endpoint, bytes.NewReader(body))
+	req, err := http.NewRequest("GET", c.PingAccessHeartbeatEndpoint, bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.HTTPClient.Do(req)

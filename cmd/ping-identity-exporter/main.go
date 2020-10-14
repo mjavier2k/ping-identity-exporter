@@ -3,11 +3,16 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"path/filepath"
 
+	"github.com/mjavier2k/ping-identity-exporter/pkg/ping"
 	"github.com/mjavier2k/ping-identity-exporter/pkg/prom"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
+
+	flag "github.com/spf13/pflag"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -15,13 +20,38 @@ var (
 	buildTime string // when the executable was built
 )
 
+func init() {
+
+	flag.CommandLine.SortFlags = false
+	flag.IntP(ping.ListenPortFlag, "l", 9988, fmt.Sprintf("Port for the exporter to listen on."))
+	flag.BoolP(ping.InsecureSSLFlag, "i", true, fmt.Sprintf("Whether to disable TLS validation when calling the Ping Identity Application API."))
+	flag.Int64P(ping.HTTPClientTimeoutFlag, "t", 30, fmt.Sprintf("HTTP Client timeout (in seconds) per call to Ping Identity Application API."))
+	flag.StringP(ping.ConfigFileFlag, "c", "config", fmt.Sprintf("Specify configuration file."))
+
+	flag.Parse()
+	viper.BindPFlags(flag.CommandLine)
+
+	viper.SetConfigName(filepath.Base(viper.GetString(ping.ConfigFileFlag)))
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(filepath.Dir(viper.GetString(ping.ConfigFileFlag)))
+	viper.AddConfigPath(".")
+
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			log.Infof("No config file found.")
+		}
+	} else {
+		log.Infof("Found configuration file on %v ", viper.GetViper().ConfigFileUsed())
+	}
+}
+
 func main() {
 	log.Infof("Version: %v", sha1ver)
 	log.Infof("Built: %v", buildTime)
 
-	listenAddr := fmt.Sprintf("127.0.0.1:%v", 9999)
+	listenAddr := fmt.Sprintf("127.0.0.1:%v", viper.GetInt(ping.ListenPortFlag))
 	http.Handle("/metrics", promhttp.Handler())
-	log.Infof("Booted and listening on %v/pingaccess\n", listenAddr)
+	log.Infof("Ping-Identity-Exporter: Started and listening on %v/pingaccess\n", listenAddr)
 
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "UP")

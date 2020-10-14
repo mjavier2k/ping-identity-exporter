@@ -6,16 +6,18 @@ import (
 )
 
 var (
-	ListenPortFlag        = "listenPort"
-	HTTPClientTimeoutFlag = "timeout"
-	ListenPortFlagEnv     = "PINGEXPORTER_PORT"
+	InsecureSSLFlag             = "insecure"
+	ListenPortFlag              = "listenPort"
+	HTTPClientTimeoutFlag       = "timeout"
+	PingAccessHeartbeatEndpoint = "pingAccessHeartbeatEndpoint"
+	ConfigFileFlag              = "config"
 )
 
 //Client is
 type Client struct {
-	Hostname   string
-	Endpoint   string
-	HTTPClient *http.Client
+	Hostname                    string
+	PingAccessHeartbeatEndpoint string
+	HTTPClient                  *http.Client
 }
 
 // PingAccessHBResponse is the response payload from calling http://host:3000/pa/hearthbeat.ping endpoint

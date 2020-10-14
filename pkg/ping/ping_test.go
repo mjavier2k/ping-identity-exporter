@@ -14,9 +14,9 @@ import (
 var (
 	pingHostname = "https://lv1testpingaccess01.example.com:3000/pa/heartbeat.ping"
 	pingClient   = ping.Client{
-		Hostname:   pingHostname,
-		Endpoint:   fmt.Sprintf("%v", pingHostname),
-		HTTPClient: &http.Client{},
+		Hostname:                    pingHostname,
+		PingAccessHeartbeatEndpoint: fmt.Sprintf("%v", pingHostname),
+		HTTPClient:                  &http.Client{},
 	}
 )
 
