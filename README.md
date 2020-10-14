@@ -18,6 +18,22 @@ timeout: 30
 pingAccessHeartbeatEndpoint: https://%s:3000/pa/heartbeat.ping
 ```
 
+## Using Docker
+
+Build a Docker image tagged as ping-identity-exporter
+```bash
+docker build -t ping-identity-exporter .
+```   
+
+Run a Docker container using a default config.yaml
+```
+docker run --rm -ti -p 9999:9999 ping-identity-exporter
+```
+
+Run a Docker container using a custom config.yaml
+```
+docker run --rm -ti -p 9999:9999 -v my-custom-config-yaml:/usr/src/app/config.yaml ping-identity-exporter
+```
 
 ### Current issues
 
