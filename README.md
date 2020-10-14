@@ -9,7 +9,7 @@ Implementation of https://docs.pingidentity.com/bundle/pingaccess-53/page/nwx156
 ./ping-identity-exporter --config config.yaml
 ```
 
-By default, ping-identity-exporter will search for config.yaml at the same directory as the binary
+By default, ping-identity-exporter will search for config.yaml on the same directory as the binary
 
 ```yml
 listenPort: 9999
