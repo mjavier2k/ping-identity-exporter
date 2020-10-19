@@ -1,0 +1,5 @@
+listenPort: 9999
+insecure: true
+timeout: 30
+pingAccessHeartbeatEndpoint: https://%s:3000/pa/heartbeat.ping
+logLevel: debug

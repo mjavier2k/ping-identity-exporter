@@ -23,10 +23,11 @@ var (
 func init() {
 
 	flag.CommandLine.SortFlags = false
-	flag.IntP(ping.ListenPortFlag, "l", 9988, fmt.Sprintf("Port for the exporter to listen on."))
+	flag.IntP(ping.ListenPortFlag, "p", 9988, fmt.Sprintf("Port for the exporter to listen on."))
 	flag.BoolP(ping.InsecureSSLFlag, "i", true, fmt.Sprintf("Whether to disable TLS validation when calling the Ping Identity Application API."))
 	flag.Int64P(ping.HTTPClientTimeoutFlag, "t", 30, fmt.Sprintf("HTTP Client timeout (in seconds) per call to Ping Identity Application API."))
 	flag.StringP(ping.ConfigFileFlag, "c", "config", fmt.Sprintf("Specify configuration file."))
+	flag.StringP(ping.LogLevel, "l", "info", fmt.Sprintf("Specify loging level"))
 
 	flag.Parse()
 	viper.BindPFlags(flag.CommandLine)
@@ -43,6 +44,8 @@ func init() {
 	} else {
 		log.Infof("Found configuration file on %v ", viper.GetViper().ConfigFileUsed())
 	}
+
+	log.Base().SetLevel(viper.GetString(ping.LogLevel))
 }
 
 func main() {
@@ -51,7 +54,7 @@ func main() {
 
 	listenAddr := fmt.Sprintf("127.0.0.1:%v", viper.GetInt(ping.ListenPortFlag))
 	http.Handle("/metrics", promhttp.Handler())
-	log.Infof("Ping-Identity-Exporter: Started and listening on %v/pingaccess\n", listenAddr)
+	log.Infof("ping-identity-exporter: Started and listening on %v/pingaccess\n", listenAddr)
 
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "UP")

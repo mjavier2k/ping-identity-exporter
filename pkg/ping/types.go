@@ -11,6 +11,7 @@ var (
 	HTTPClientTimeoutFlag       = "timeout"
 	PingAccessHeartbeatEndpoint = "pingAccessHeartbeatEndpoint"
 	ConfigFileFlag              = "config"
+	LogLevel                    = "logLevel"
 )
 
 //Client is

@@ -57,11 +57,11 @@ func convertToBytes(val *float64, uom string) {
 	case "MB":
 		*val = *val * (1000 * 1000) // convert MB to Bytes
 	}
-	log.Debugf("converted string value %v ", val)
+	log.Debugf("Converted string value %v ", val)
 }
 
-func strToFloat64(arg string) (float64, error) {
-	log.Infof("Converting %s to float64", arg)
+func strToFloat64(arg string) (float64, float64, error) {
+	log.Debugf("Converting %s to float64", arg)
 
 	// Matches 1234, 123.45 GB, 123 MB, 123.99
 	regex := regexp.MustCompile(`(\d*[.,]?\d+)\s?(\w+)?`)
@@ -69,13 +69,14 @@ func strToFloat64(arg string) (float64, error) {
 
 	// Sometimes the api returns values like N/A. If this happens, return an error and do not render the metric from the result
 	if len(result) == 0 {
-		log.Infof("Unexpected return value from API: %s", arg)
-		return 0, fmt.Errorf("Unexpected return value from API: %s", arg)
+		log.Errorf("Unexpected return value from API: %s", arg)
+		return 0, 0, fmt.Errorf("Unexpected return value from API: %s", arg)
 	}
 
 	value, err := strconv.ParseFloat(result[0][1], 64)
 	if err != nil {
-		return 0, fmt.Errorf("Unable to convert value %s to float64. %v", arg, err)
+		log.Errorf("Unable to convert value %s to float64. %v", arg, err)
+		return 0, 0, fmt.Errorf("Unable to convert value %s to float64. %v", arg, err)
 	}
 
 	// Result[0][2] is the 2nd capture group which is the unit of measure (e.g 123.4 MB)
@@ -83,11 +84,11 @@ func strToFloat64(arg string) (float64, error) {
 		convertToBytes(&value, result[0][2])
 	}
 
-	return value, nil
+	return value, 1, nil
 }
 
 func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
-	var up float64 = 1
+	var up float64 = 0
 	var value float64 = 0
 
 	heartbeat, err := c.client.GetPingAccessHearthbeat()
@@ -101,7 +102,7 @@ func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
 		defer mux.Unlock()
 
 		// ResponseStatisticsWindowSeconds
-		if value, err = strToFloat64(hb.ResponseStatisticsWindowSeconds); err == nil {
+		if value, up, err = strToFloat64(hb.ResponseStatisticsWindowSeconds); err == nil {
 			ch <- prometheus.MustNewConstMetric(
 				MetricDescriptions.ResponseStatisticsWindowSecondsDesc,
 				prometheus.GaugeValue,
@@ -111,7 +112,7 @@ func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 
 		// ResponseStatisticsCount
-		if value, err = strToFloat64(hb.ResponseStatisticsCount); err == nil {
+		if value, up, err = strToFloat64(hb.ResponseStatisticsCount); err == nil {
 			ch <- prometheus.MustNewConstMetric(
 				MetricDescriptions.ResponseStatisticsCountDesc,
 				prometheus.GaugeValue,
@@ -121,7 +122,7 @@ func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 
 		// ResponseTimeStatistics90Percentile
-		if value, err = strToFloat64(hb.ResponseTimeStatistics90Percentile); err == nil {
+		if value, up, err = strToFloat64(hb.ResponseTimeStatistics90Percentile); err == nil {
 			ch <- prometheus.MustNewConstMetric(
 				MetricDescriptions.ResponseTimeStatistics90PercentileDesc,
 				prometheus.GaugeValue,
@@ -131,7 +132,7 @@ func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 
 		// ResponseTimeStatisticsMean
-		if value, err = strToFloat64(hb.ResponseTimeStatisticsMean); err == nil {
+		if value, up, err = strToFloat64(hb.ResponseTimeStatisticsMean); err == nil {
 			ch <- prometheus.MustNewConstMetric(
 				MetricDescriptions.ResponseTimeStatisticsMeanDesc,
 				prometheus.GaugeValue,
@@ -141,7 +142,7 @@ func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 
 		// ResponseTimeStatisticsMax
-		if value, err = strToFloat64(hb.ResponseTimeStatisticsMax); err == nil {
+		if value, up, err = strToFloat64(hb.ResponseTimeStatisticsMax); err == nil {
 			ch <- prometheus.MustNewConstMetric(
 				MetricDescriptions.ResponseTimeStatisticsMaxDesc,
 				prometheus.GaugeValue,
@@ -151,7 +152,7 @@ func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 
 		// ResponseTimeStatisticsMin
-		if value, err = strToFloat64(hb.ResponseTimeStatisticsMin); err == nil {
+		if value, up, err = strToFloat64(hb.ResponseTimeStatisticsMin); err == nil {
 			ch <- prometheus.MustNewConstMetric(
 				MetricDescriptions.ResponseTimeStatisticsMinDesc,
 				prometheus.GaugeValue,
@@ -161,7 +162,7 @@ func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 
 		// ResponseConcurrencyStatistics90Percentile
-		if value, err = strToFloat64(hb.ResponseConcurrencyStatistics90Percentile); err == nil {
+		if value, up, err = strToFloat64(hb.ResponseConcurrencyStatistics90Percentile); err == nil {
 			ch <- prometheus.MustNewConstMetric(
 				MetricDescriptions.ResponseConcurrencyStatistics90PercentileDesc,
 				prometheus.GaugeValue,
@@ -171,7 +172,7 @@ func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 
 		// ResponseConcurrencyStatisticsMean
-		if value, err = strToFloat64(hb.ResponseConcurrencyStatisticsMean); err == nil {
+		if value, up, err = strToFloat64(hb.ResponseConcurrencyStatisticsMean); err == nil {
 			ch <- prometheus.MustNewConstMetric(
 				MetricDescriptions.ResponseConcurrencyStatisticsMeanDesc,
 				prometheus.GaugeValue,
@@ -181,7 +182,7 @@ func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 
 		// ResponseConcurrencyStatisticsMax
-		if value, err = strToFloat64(hb.ResponseConcurrencyStatisticsMax); err == nil {
+		if value, up, err = strToFloat64(hb.ResponseConcurrencyStatisticsMax); err == nil {
 			ch <- prometheus.MustNewConstMetric(
 				MetricDescriptions.ResponseConcurrencyStatisticsMaxDesc,
 				prometheus.GaugeValue,
@@ -191,7 +192,7 @@ func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 
 		// ResponseConcurrencyStatisticsMin
-		if value, err = strToFloat64(hb.ResponseConcurrencyStatisticsMin); err == nil {
+		if value, up, err = strToFloat64(hb.ResponseConcurrencyStatisticsMin); err == nil {
 			ch <- prometheus.MustNewConstMetric(
 				MetricDescriptions.ResponseConcurrencyStatisticsMinDesc,
 				prometheus.GaugeValue,
@@ -201,7 +202,7 @@ func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 
 		// CPULoad
-		if value, err = strToFloat64(hb.CPULoad); err == nil {
+		if value, up, err = strToFloat64(hb.CPULoad); err == nil {
 			ch <- prometheus.MustNewConstMetric(
 				MetricDescriptions.CPULoadDesc,
 				prometheus.GaugeValue,
@@ -211,7 +212,7 @@ func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 
 		// TotalJvmMemory
-		if value, err = strToFloat64(hb.TotalJvmMemory); err == nil {
+		if value, up, err = strToFloat64(hb.TotalJvmMemory); err == nil {
 			ch <- prometheus.MustNewConstMetric(
 				MetricDescriptions.TotalJvmMemoryDesc,
 				prometheus.GaugeValue,
@@ -221,7 +222,7 @@ func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 
 		// FreeJvmMemory
-		if value, err = strToFloat64(hb.FreeJvmMemory); err == nil {
+		if value, up, err = strToFloat64(hb.FreeJvmMemory); err == nil {
 			ch <- prometheus.MustNewConstMetric(
 				MetricDescriptions.FreeJvmMemoryDesc,
 				prometheus.GaugeValue,
@@ -231,7 +232,7 @@ func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 
 		// UsedJvmMemory
-		if value, err = strToFloat64(hb.UsedJvmMemory); err == nil {
+		if value, up, err = strToFloat64(hb.UsedJvmMemory); err == nil {
 			ch <- prometheus.MustNewConstMetric(
 				MetricDescriptions.UsedJvmMemoryDesc,
 				prometheus.GaugeValue,
@@ -241,7 +242,7 @@ func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 
 		// TotalPhysicalSystemMemory
-		if value, err = strToFloat64(hb.TotalPhysicalSystemMemory); err == nil {
+		if value, up, err = strToFloat64(hb.TotalPhysicalSystemMemory); err == nil {
 			ch <- prometheus.MustNewConstMetric(
 				MetricDescriptions.TotalPhysicalSystemMemoryDesc,
 				prometheus.GaugeValue,
@@ -251,7 +252,7 @@ func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 
 		// TotalFreePhysicalSystemMemory
-		if value, err = strToFloat64(hb.TotalFreePhysicalSystemMemory); err == nil {
+		if value, up, err = strToFloat64(hb.TotalFreePhysicalSystemMemory); err == nil {
 			ch <- prometheus.MustNewConstMetric(
 				MetricDescriptions.TotalFreePhysicalSystemMemoryDesc,
 				prometheus.GaugeValue,
@@ -261,7 +262,7 @@ func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 
 		// TotalUsedPhysicalSystemMemory
-		if value, err = strToFloat64(hb.TotalUsedPhysicalSystemMemory); err == nil {
+		if value, up, err = strToFloat64(hb.TotalUsedPhysicalSystemMemory); err == nil {
 			ch <- prometheus.MustNewConstMetric(
 				MetricDescriptions.TotalUsedPhysicalSystemMemoryDesc,
 				prometheus.GaugeValue,
@@ -271,7 +272,7 @@ func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 
 		// NumberOfCpus
-		if value, err = strToFloat64(hb.NumberOfCpus); err == nil {
+		if value, up, err = strToFloat64(hb.NumberOfCpus); err == nil {
 			ch <- prometheus.MustNewConstMetric(
 				MetricDescriptions.NumberOfCpusDesc,
 				prometheus.GaugeValue,
@@ -289,7 +290,7 @@ func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
 		)
 
 		// OpenClientConnections
-		if value, err = strToFloat64(hb.OpenClientConnections); err == nil {
+		if value, up, err = strToFloat64(hb.OpenClientConnections); err == nil {
 			ch <- prometheus.MustNewConstMetric(
 				MetricDescriptions.OpenClientConnectionsDesc,
 				prometheus.GaugeValue,
@@ -299,7 +300,7 @@ func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 
 		// NumberOfApplications
-		if value, err = strToFloat64(hb.NumberOfApplications); err == nil {
+		if value, up, err = strToFloat64(hb.NumberOfApplications); err == nil {
 			ch <- prometheus.MustNewConstMetric(
 				MetricDescriptions.NumberOfApplicationsDesc,
 				prometheus.GaugeValue,
@@ -309,7 +310,7 @@ func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 
 		// NumberOfVirtualHosts
-		if value, err = strToFloat64(hb.NumberOfVirtualHosts); err == nil {
+		if value, up, err = strToFloat64(hb.NumberOfVirtualHosts); err == nil {
 			ch <- prometheus.MustNewConstMetric(
 				MetricDescriptions.NumberOfVirtualHostsDesc,
 				prometheus.GaugeValue,
