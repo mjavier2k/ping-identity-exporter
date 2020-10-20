@@ -48,16 +48,21 @@ func (c *pingCollector) Describe(ch chan<- *prometheus.Desc) {
 	// ch <- MetricDescriptions.LastRefreshTimeDesc
 }
 
-func convertToBytes(val *float64, uom string) {
+//ConvertToBytes is
+func ConvertToBytes(val float64, uom string) float64 {
+	var result float64
 	// unit of measure
 	// Note: Not using 1 Kb = 1024 bytes to avoid skewing the values returned by the Ping API
 	switch uom {
 	case "GB":
-		*val = *val * (1000 * 1000 * 1000) // convert GB to Bytes
+		result = val * (1000 * 1000 * 1000) // convert GB to Bytes
 	case "MB":
-		*val = *val * (1000 * 1000) // convert MB to Bytes
+		result = val * (1000 * 1000) // convert MB to Bytes
+	default:
+		result = val // no uom? return original value
 	}
-	log.Debugf("Converted string value %v ", val)
+	log.Debugf("Converted string value %v to %v ", val, result)
+	return result
 }
 
 func strToFloat64(arg string) (float64, float64, error) {
@@ -81,7 +86,7 @@ func strToFloat64(arg string) (float64, float64, error) {
 
 	// Result[0][2] is the 2nd capture group which is the unit of measure (e.g 123.4 MB)
 	if result[0][2] != "" {
-		convertToBytes(&value, result[0][2])
+		value = ConvertToBytes(value, result[0][2])
 	}
 
 	return value, 1, nil
