@@ -26,13 +26,13 @@ func NewPingClient(hostname string) *Client {
 			Transport: tr,
 			Timeout:   time.Duration(viper.GetInt64(HTTPClientTimeoutFlag)) * time.Second,
 		},
-		PingAccessHeartbeatEndpoint: fmt.Sprintf(viper.GetString(PingAccessHeartbeatEndpoint), hostname),
+		PingHeartbeatEndpoint: fmt.Sprintf(hostname),
 	}
 }
 
 func doHTTPGet(c *Client, body []byte) ([]byte, error) {
 	log.Infof("Start scrape for %v\n", c.Hostname)
-	req, err := http.NewRequest("GET", c.PingAccessHeartbeatEndpoint, bytes.NewReader(body))
+	req, err := http.NewRequest("GET", c.PingHeartbeatEndpoint, bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.HTTPClient.Do(req)
@@ -54,9 +54,8 @@ func doHTTPGet(c *Client, body []byte) ([]byte, error) {
 	return body, nil
 }
 
-// GetPingAccessHearthbeat is
-func (c *Client) GetPingAccessHearthbeat() (PingAccessHBResponse, error) {
-	r := PingAccessHBResponse{}
+func (c *Client) GetHearthbeat() (PingHBResponse, error) {
+	r := PingHBResponse{}
 	bodyBytes, err := doHTTPGet(c, nil)
 
 	if err != nil {

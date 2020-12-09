@@ -60,7 +60,7 @@ func main() {
 		fmt.Fprintf(w, "UP")
 	})
 
-	http.HandleFunc("/pingaccess", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/pingidentity", func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query()
 
 		target := query.Get("target")

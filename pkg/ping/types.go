@@ -2,6 +2,7 @@ package ping
 
 import (
 	"net/http"
+	"regexp"
 	"time"
 )
 
@@ -16,13 +17,19 @@ var (
 
 //Client is
 type Client struct {
-	Hostname                    string
-	PingAccessHeartbeatEndpoint string
-	HTTPClient                  *http.Client
+	Hostname              string
+	PingHeartbeatEndpoint string
+	HTTPClient            *http.Client
 }
 
-// PingAccessHBResponse is the response payload from calling http://host:3000/pa/hearthbeat.ping endpoint
-type PingAccessHBResponse struct {
+func (c Client) GetHostname() string {
+	re := regexp.MustCompile("(?:https://)?([a-z0-9]+).*")
+	match := re.FindStringSubmatch(c.Hostname)
+	return match[1]
+}
+
+// PingHBResponse is the response payload from calling http://host:3000/pa/hearthbeat.ping endpoint
+type PingHBResponse struct {
 	Items []struct {
 		ResponseStatisticsWindowSeconds           string    `json:"response.statistics.window.seconds"`
 		ResponseStatisticsCount                   string    `json:"response.statistics.count"`

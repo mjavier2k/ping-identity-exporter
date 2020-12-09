@@ -14,14 +14,14 @@ import (
 var (
 	pingHostname = "https://lv1testpingaccess01.example.com:3000/pa/heartbeat.ping"
 	pingClient   = ping.Client{
-		Hostname:                    pingHostname,
-		PingAccessHeartbeatEndpoint: fmt.Sprintf("%v", pingHostname),
-		HTTPClient:                  &http.Client{},
+		Hostname:              pingHostname,
+		PingHeartbeatEndpoint: fmt.Sprintf("%v", pingHostname),
+		HTTPClient:            &http.Client{},
 	}
 )
 
 func TestClient_GetPingAccessHearthbeat(t *testing.T) {
-	fixture, err := ioutil.ReadFile("../../test/fixtures/heartbeat.json")
+	fixture, err := ioutil.ReadFile("../../test/fixtures/pa.heartbeat.json")
 	if err != nil {
 		panic(err)
 	}
@@ -46,7 +46,7 @@ func TestClient_GetPingAccessHearthbeat(t *testing.T) {
 				Reply(200).
 				BodyString(string(fixture))
 
-			gotRaw, err := pingClient.GetPingAccessHearthbeat()
+			gotRaw, err := pingClient.GetHearthbeat()
 			fmt.Println(gotRaw)
 			got := gotRaw.Items[0].CPULoad
 

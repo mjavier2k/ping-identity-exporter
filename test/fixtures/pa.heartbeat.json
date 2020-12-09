@@ -17,9 +17,10 @@
   "total.free.physical.system.memory": "688.079 MB",
   "total.used.physical.system.memory": "3.285 GB",
   "number.of.cpus": "8",
-  "hostname": "lv1stgpingaccess03",
+  "hostname": "testaccess03",
   "open.client.connections": "4",
   "number.of.applications": "53",
   "number.of.virtual.hosts": "325",
   "last.refresh.time": "2020-09-16T13:35:00.000Z"
 }]}
+

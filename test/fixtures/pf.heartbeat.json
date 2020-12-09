@@ -1,0 +1,33 @@
+
+{
+  "items":[
+     {
+        "cpu.load":"25.93",
+        "total.jvm.memory":"418.906 MB",
+        "free.jvm.memory":"44.277 MB",
+        "used.jvm.memory":"374.629 MB",
+        "total.physical.system.memory":"3.973 GB",
+        "total.free.physical.system.memory":"847.036 MB",
+        "total.used.physical.system.memory":"3.126 GB",
+        "number.of.cpus":"4",
+        "atm.PingAccessAccessToken.token.map.size":"3",
+        "atm.nfittimeentrytoken.token.map.size":"0",
+        "atm.stageadminaccesstokenmanager.token.map.size":"1",
+        "idp.session.registry.session.map.size":"8",
+        "response.concurrency.statistics.90.percentile":"1",
+        "response.concurrency.statistics.max":"3",
+        "response.concurrency.statistics.mean":"1.0658",
+        "response.concurrency.statistics.min":"1",
+        "response.statistics.count":"5000",
+        "response.statistics.window.seconds":"300",
+        "response.time.statistics.90.percentile":"3",
+        "response.time.statistics.max":"16",
+        "response.time.statistics.mean":"2.0620000000000003",
+        "response.time.statistics.min":"1",
+        "session.state.attribute.map.size":"9",
+        "sp.session.registry.session.map.size":"0",
+        "total.failed.transactions":"2",
+        "total.transactions":"251"
+     }
+  ]
+}
