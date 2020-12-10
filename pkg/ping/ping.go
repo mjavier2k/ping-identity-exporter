@@ -54,15 +54,16 @@ func doHTTPGet(c *Client, body []byte) ([]byte, error) {
 	return body, nil
 }
 
-func (c *Client) GetHearthbeat() (PingHBResponse, error) {
+func (c *Client) GetHeartbeat() (PingHBResponse, error) {
 	r := PingHBResponse{}
 	bodyBytes, err := doHTTPGet(c, nil)
-
 	if err != nil {
 		return r, err
 	}
-	err = json.Unmarshal(bodyBytes, &r)
+
+	err = json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&r)
 	if err != nil {
+		log.Infof("errorrororor %v", err)
 		return r, err
 	}
 	return r, nil

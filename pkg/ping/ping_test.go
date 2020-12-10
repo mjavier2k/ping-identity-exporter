@@ -46,7 +46,7 @@ func TestClient_GetPingAccessHearthbeat(t *testing.T) {
 				Reply(200).
 				BodyString(string(fixture))
 
-			gotRaw, err := pingClient.GetHearthbeat()
+			gotRaw, err := pingClient.GetHeartbeat()
 			fmt.Println(gotRaw)
 			got := gotRaw.Items[0].CPULoad
 
