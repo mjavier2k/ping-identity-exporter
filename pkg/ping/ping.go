@@ -63,7 +63,6 @@ func (c *Client) GetHeartbeat() (PingHBResponse, error) {
 
 	err = json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&r)
 	if err != nil {
-		log.Infof("errorrororor %v", err)
 		return r, err
 	}
 	return r, nil
