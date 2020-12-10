@@ -72,9 +72,11 @@ func strToFloat64(arg string) (float64, error) {
 	regex := regexp.MustCompile(`(\d*[.,]?\d+)\s?(\w+)?`)
 	result := regex.FindAllStringSubmatch(arg, -1)
 
-	// Sometimes the api returns values like N/A. If this happens, return an error and do not render the metric from the result
+	// Sometimes the api returns values like N/A.
+	// If this happens,
+	// print a DEBUG and do not render the metric from the result
 	if len(result) == 0 {
-		log.Errorf("Unexpected return value from API: %s", arg)
+		log.Debugf("Unexpected return value from API: %s", arg)
 		return 0, fmt.Errorf("Unexpected return value from API: %s", arg)
 	}
 
@@ -104,9 +106,9 @@ func setUpMetric(c *pingCollector, up float64, ch chan<- prometheus.Metric) {
 func (c *pingCollector) Collect(ch chan<- prometheus.Metric) {
 	var value float64 = 0
 
-	heartbeat, err := c.client.GetHearthbeat()
+	heartbeat, err := c.client.GetHeartbeat()
 	if err != nil {
-		setUpMetric(c, 0, ch)
+		// setUpMetric(c, 0, ch)
 		log.Errorf("Received invalid status code from RPC call: %v\n", err)
 	}
 
